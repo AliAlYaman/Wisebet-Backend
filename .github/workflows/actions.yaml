@@ -1,0 +1,85 @@
+name: Laravel CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, dev]
+
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out the repository
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Step 2: Set up PHP (with required version)
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2.12'
+
+      - name : Set up Node
+        uses: actions/setup-node@v4
+        with:
+            node-version: '20'
+      # Step 3: Install dependencies via Composer
+      - name: Install dependencies
+        run: |
+          composer install --no-interaction --prefer-dist
+
+
+      # Step 4: Cache dependencies (optional to speed up future runs)
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.composer/cache
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+  #Continuous Release Job (For creating release tags)
+  # release:
+  #   runs-on: ubuntu-latest
+  #   needs: [setup]  # Ensure the Setup job runs first
+  #   if: github.ref == 'refs/heads/main'  # Only run on the main branch
+  #   steps:
+  #     # Step 1: Checkout code
+  #     - name: Checkout Code
+  #       uses: actions/checkout@v2
+
+  #     # Step 2: Bump version (tagging the release)
+  #     - name: Bump version
+  #       id: version
+  #       uses: phips28/gh-action-bump-version@master
+  #       with:
+  #         tag-prefix: 'v'
+  #         major-wording: 'MAJOR'
+  #         minor-wording: 'minor'
+  #         patch-wording: 'patch,fixes'
+  #         commit-message: 'chore: release {{version}} [skip ci]'
+  #     # Step 3: Create GitHub Release with the new version tag
+  #     - name: Create Release
+  #       uses: softprops/action-gh-release@v2  # noqa: softprops is correct
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       with:
+  #         files: storage/logs/*.log  # noqa: Laravel is correct
+  #         tag_name: ${{ steps.version.outputs.newTag }}
+  #         name: ${{ steps.version.outputs.newTag }}
+  #         body: |
+  #           Laravel Production Release ${{ steps.version.outputs.newTag }}  # noqa: Laravel is correct
+  #           Changelog:
+  #           - Updated dependencies
+  #           - Database migrations applied
+  #           - Tests passed successfully
+  #         draft: false
+  #         prerelease: false
+  #         make_latest: true
+
