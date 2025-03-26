@@ -11,9 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create("sports", function (Blueprint $table) {
+        Schema::create("competitions", function (Blueprint $table) {
             $table->id()->primary();
-            $table->string("name"); //Enum
+            $table->foreignId("sport_id")->constrained()->onDelete("cascade")->onUpdate("cascade");
+            $table->string("name");
+            $table->string("country");
+            $table->string("logo");
+            $table->boolean("active");
             $table->timestamps();
         });
     }
@@ -23,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists("sports");
+        Schema::dropIfExists("competitions");
     }
 };
