@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create("sports", function (Blueprint $table) {
+        Schema::create("ai_models", function (Blueprint $table) {
             $table->id()->primary();
-            $table->string("name"); //Enum
+            $table->foreignId("fixture_id")->constrained()->onDelete("cascade")->onUpdate("cascade");
+            $table->json("predicted_outcome");
+            $table->decimal("confidence", 5, 2);
             $table->timestamps();
         });
     }
@@ -23,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists("sports");
+        Schema::dropIfExists("ai_models");
     }
 };

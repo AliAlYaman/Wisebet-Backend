@@ -11,9 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create("sports", function (Blueprint $table) {
+        Schema::create('fixtures', function (Blueprint $table) {
             $table->id()->primary();
-            $table->string("name"); //Enum
+            $table->foreignId("competition_id")->constrained()->onDelete("cascade")->onUpdate("cascade");
+            $table->string("home_team");
+            $table->string("away_team");
+            $table->json("odds");
+            $table->time("time");
+            $table->string("status");
             $table->timestamps();
         });
     }
@@ -23,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists("sports");
+        Schema::dropIfExists('fixtures');
     }
 };
