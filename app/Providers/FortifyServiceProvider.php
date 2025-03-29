@@ -11,7 +11,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Laravel\Fortify\Contracts\RegisterResponse;
 use Laravel\Fortify\Fortify;
+use Illuminate\Http\JsonResponse;
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -20,7 +22,21 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->instance(RegisterResponse::class, new class implements RegisterResponse {
+            public function toResponse($request)
+            {
+                $user = $request->user();
+
+                // Generate a token for the newly registered user
+                $token = $user->createToken('token')->plainTextToken;
+
+                return new JsonResponse([
+                    'message' => 'Registration successful',
+                    'token' => $token,
+                    'user' => $user
+                ]);
+            }
+        });
     }
 
     /**
