@@ -22,4 +22,9 @@ class Sport extends Model
     public function competitions() : HasMany {
         return $this->hasMany(Competition::class);
     }
+
+    public function teams() : HasMany {
+        return $this->hasMany(Team::class);
+    }
+
 }
