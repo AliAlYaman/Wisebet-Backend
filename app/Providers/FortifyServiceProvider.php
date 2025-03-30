@@ -14,6 +14,9 @@ use Illuminate\Support\Str;
 use Laravel\Fortify\Contracts\RegisterResponse;
 use Laravel\Fortify\Fortify;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
+use Laravel\Fortify\Contracts\LoginResponse;
+use Laravel\Fortify\Contracts\LogoutResponse;
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -28,13 +31,48 @@ class FortifyServiceProvider extends ServiceProvider
                 $user = $request->user();
 
                 // Generate a token for the newly registered user
-                $token = $user->createToken('token')->plainTextToken;
+                $token =  $user->createToken('api_token')->plainTextToken;
 
-                return new JsonResponse([
+                $response = new JsonResponse([
                     'message' => 'Registration successful',
+                    'user' => $user,
                     'token' => $token,
-                    'user' => $user
+                    'type' => 'bearer'
                 ]);
+
+                return $response;
+            }
+        });
+        $this->app->instance(LoginResponse::class, new class implements LoginResponse {
+            public function toResponse($request)
+            {
+                $user = $request->user();
+
+                if ($user->tokens()->count() >= 3) {
+                    // Delete the oldest token
+                    $user->tokens()->orderBy('created_at')->first()->delete();
+                }
+                // Generate a token for the newly registered user
+                $token =  $user->createToken('api_token')->plainTextToken;
+
+                $response = new JsonResponse([
+                    'message' => 'Login successful',
+                    'user' => $user,
+                    'token' => $token,
+                    'type' => 'bearer'
+                ]);
+
+                return $response;
+            }
+        });
+        $this->app->instance(LogoutResponse::class, new class implements LogoutResponse {
+            public function toResponse($request)
+            {
+                $response = new JsonResponse([
+                    'message' => 'Logout successful',
+                ]);
+
+                return $response;
             }
         });
     }
