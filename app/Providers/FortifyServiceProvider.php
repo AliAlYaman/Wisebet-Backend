@@ -14,9 +14,9 @@ use Illuminate\Support\Str;
 use Laravel\Fortify\Contracts\RegisterResponse;
 use Laravel\Fortify\Fortify;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
 use Laravel\Fortify\Contracts\LoginResponse;
 use Laravel\Fortify\Contracts\LogoutResponse;
+use Laravel\Fortify\Contracts\VerifyEmailResponse;
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -53,7 +53,7 @@ class FortifyServiceProvider extends ServiceProvider
                     $user->tokens()->orderBy('created_at')->first()->delete();
                 }
                 // Generate a token for the newly registered user
-                $token =  $user->createToken('api_token')->plainTextToken;
+                $token =  $user->createToken('api_token', ['*'], now()->addDay(3))->plainTextToken;
 
                 $response = new JsonResponse([
                     'message' => 'Login successful',
@@ -70,6 +70,17 @@ class FortifyServiceProvider extends ServiceProvider
             {
                 $response = new JsonResponse([
                     'message' => 'Logout successful',
+                ]);
+
+                return $response;
+            }
+        });
+        $this->app->instance(VerifyEmailResponse::class, new class implements VerifyEmailResponse {
+            public function toResponse($request)
+            {
+                $response = new JsonResponse([
+                    'message' => 'Verified Email',
+                    'success' => true
                 ]);
 
                 return $response;

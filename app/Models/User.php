@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\UserRoleEnum;
+use App\Notifications\CustomVerifyEmail;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -39,5 +40,10 @@ class User extends Authenticatable implements MustVerifyEmail
         "email_verified_at" => "datetime",
         "role" => UserRoleEnum::class
     ];
+
+    public function sendEmailVerificationNotification()
+    {
+        $this->notify(new CustomVerifyEmail($this));
+    }
 
 }
