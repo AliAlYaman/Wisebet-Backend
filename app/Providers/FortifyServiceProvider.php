@@ -16,6 +16,7 @@ use Laravel\Fortify\Fortify;
 use Illuminate\Http\JsonResponse;
 use Laravel\Fortify\Contracts\LoginResponse;
 use Laravel\Fortify\Contracts\LogoutResponse;
+use Laravel\Fortify\Contracts\TwoFactorEnabledResponse;
 use Laravel\Fortify\Contracts\VerifyEmailResponse;
 
 class FortifyServiceProvider extends ServiceProvider
@@ -80,6 +81,19 @@ class FortifyServiceProvider extends ServiceProvider
             {
                 $response = new JsonResponse([
                     'message' => 'Verified Email',
+                    'success' => true
+                ]);
+
+                return $response;
+            }
+        });
+        $this->app->instance(TwoFactorEnabledResponse::class, new class implements TwoFactorEnabledResponse {
+            public function toResponse($request)
+            {
+                $response = new JsonResponse([
+                    'message' => 'Enabled 2FA for user : ' .$request->user()->email,
+                    'qr_code' => $request->user()->twoFactorQrCodeSvg(),
+                    'secret' => decrypt($request->user()->two_factor_secret),
                     'success' => true
                 ]);
 
