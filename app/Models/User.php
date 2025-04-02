@@ -12,6 +12,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Mail;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Sanctum\HasApiTokens;
+use PragmaRX\Google2FALaravel\Google2FA;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -27,6 +28,8 @@ class User extends Authenticatable implements MustVerifyEmail
         "user_name",
         "email",
         "password",
+        'two_factor_secret',
+        'two_factor_verified'
     ];
 
     /**
@@ -41,7 +44,8 @@ class User extends Authenticatable implements MustVerifyEmail
 
     protected $casts = [
         "email_verified_at" => "datetime",
-        "role" => UserRoleEnum::class
+        "role" => UserRoleEnum::class,
+        'two_factor_verified' => 'boolean',
     ];
 
     public function sendEmailVerificationNotification()
@@ -50,7 +54,19 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     public function sendPasswordResetNotification($token)
-{
-    Mail::to($this->email)->send(new CustomResetPasswordMail($token, $this->email));
-}
+    {
+        Mail::to($this->email)->send(new CustomResetPasswordMail($token, $this->email));
+    }
+    public function google2fa(): Google2FA
+    {
+        return app(Google2FA::class);
+    }
+
+    public function generateTwoFactorCode()
+    {
+        $this->update([
+            'two_factor_secret' => encrypt($this->google2fa()->generateSecretKey()),
+            'two_factor_verified' => now()
+        ]);
+    }
 }
