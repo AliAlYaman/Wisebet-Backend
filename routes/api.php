@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\GoogleAuthController;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
@@ -8,16 +8,17 @@ use BaconQrCode\Writer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
-use Laravel\Fortify\Http\Controllers\TwoFactorAuthenticatedSessionController;
 use Laravel\Fortify\Http\Controllers\VerifyEmailController;
-use Laravel\Fortify\Http\Controllers\TwoFactorAuthenticationController;
-use Laravel\Fortify\Http\Controllers\TwoFactorQrCodeController;
 use PragmaRX\Google2FALaravel\Google2FA;
 
 Route::get('/v1/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
+Route::prefix('v1/auth')->group(function () {
+    Route::get('/google', [GoogleAuthController::class, 'redirectToGoogle']);
+    Route::post('/google', [GoogleAuthController::class, 'handleGoogleCallback']);
+});
 
 //   // Generate QR Code
 //   Route::get('/user/two-factor-qr-code', [TwoFactorQrCodeController::class, 'show']);
