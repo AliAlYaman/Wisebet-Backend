@@ -31,7 +31,7 @@ class CustomResetPasswordMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Custom Reset Password Mail',
+            subject: 'Reset Password - Stoxify',
         );
     }
 

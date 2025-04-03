@@ -1,13 +1,16 @@
 <?php
 
 use App\Http\Controllers\GoogleAuthController;
+use \App\Http\Middleware\ValidatePasswordResetEmail;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
+use Laravel\Fortify\Http\Controllers\PasswordResetLinkController;
 use Laravel\Fortify\Http\Controllers\VerifyEmailController;
 use PragmaRX\Google2FALaravel\Google2FA;
 
@@ -20,14 +23,6 @@ Route::prefix('v1/auth')->group(function () {
     Route::post('/google', [GoogleAuthController::class, 'handleGoogleCallback']);
 });
 
-//   // Generate QR Code
-//   Route::get('/user/two-factor-qr-code', [TwoFactorQrCodeController::class, 'show']);
-
-//   // Enable 2FA
-//   Route::post('/user/two-factor-authentication', [TwoFactorAuthenticationController::class, 'store']);
-
-//   // Disable 2FA
-//   Route::delete('/user/two-factor-authentication', [TwoFactorAuthenticationController::class, 'destroy']);
 Route::middleware('auth:sanctum')->post('/v1/enable-2fa', function (Request $request) {
     $user = $request->user();
 
@@ -78,3 +73,5 @@ Route::middleware('auth:sanctum')->post('/v1/verify-2fa', function (Request $req
 Route::middleware('auth:sanctum')->post('/v1/logout', [AuthenticatedSessionController::class, 'destroy']);
 
 Route::middleware('auth:sanctum') ->get('v1/email/verify/{id}/{hash}', [VerifyEmailController::class , '__invoke'])->name('verification.verify');
+
+Route::middleware(['auth:sanctum' , ValidatePasswordResetEmail::class ]) ->post('v1/forgot-password', [PasswordResetLinkController::class , 'store'])->name('password.email');

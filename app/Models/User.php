@@ -47,7 +47,6 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $casts = [
         "email_verified_at" => "datetime",
         "role" => UserRoleEnum::class,
-        'two_factor_verified' => 'boolean',
     ];
 
     public function sendEmailVerificationNotification()
